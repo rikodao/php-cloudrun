@@ -1,15 +1,33 @@
 package main
 
 import (
-    "fmt"
+    "encoding/json"
+    "log"
     "net/http"
 )
 
-func main() {
-    http.HandleFunc("/", HelloServer)
-    http.ListenAndServe(":8080", nil)
+// Response definition for response API
+type Response struct {
+    Message string `json:"message"`
 }
 
-func HelloServer(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+func handler(w http.ResponseWriter, r *http.Request) {
+
+    response := Response{}
+    response.Message = "Hello world!"
+    responseJSON, err := json.Marshal(response)
+
+    if err != nil {
+        log.Fatalf("Failed to parse json: %v", err)
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write(responseJSON)
+}
+
+func main() {
+    log.Print("starting server...")
+    http.HandleFunc("/", handler)
+    http.ListenAndServe(":8080", nil)
 }
